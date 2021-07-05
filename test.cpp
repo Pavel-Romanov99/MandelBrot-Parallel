@@ -56,25 +56,32 @@ int main()
 	fout << imageWidth << " " << imageheight << endl;
 	fout << "256" << endl;
 
-	int threads = 8;
+	int threads = 1;
 	int size = imageheight / threads;
 
 	cout << size << endl;
-#pragma omp parallel for num_threads(threads)
-	for (int y = omp_get_thread_num() * size; y < (omp_get_thread_num() + 1) * size; y++)
+
+#pragma omp parallel for
+	for (int i = 0; i < threads; i++)
 	{
-		for (int x = 0; x < imageWidth; x++)
+		int startY = i * size;
+		int endY = (i + 1) * size;
+
+		for (int y = startY; y < endY; y++)
 		{
-			double cr = mapToReal(x, imageWidth, minR, maxR);
-			double ci = mapToImaginary(y, size, minI, maxI);
+			for (int x = 0; x < imageWidth; x++)
+			{
+				double cr = mapToReal(x, imageWidth, minR, maxR);
+				double ci = mapToImaginary(y, imageheight, minI, maxI);
 
-			int n = findMandelbrot(cr, ci, maxN);
+				int n = findMandelbrot(cr, ci, maxN);
 
-			int r = (n * 3 % 256);
-			int g = (n * n % 256);
-			int b = (n % 256);
+				int r = ((n * 3) % 256);
+				int g = (n * n % 256);
+				int b = (n % 256);
 
-			fout << r << " " << g << " " << b << " ";
+				fout << r << " " << g << " " << b << " ";
+			}
 		}
 	}
 
